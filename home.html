@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darago - Beranda Produk</title>
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+
+    <!-- NAVBAR ATAS (Logo, Search, Cart) -->
+    <header class="navbar">
+        <div class="nav-left">
+            <img src="logo with text.png" alt="Logo Darago" class="nav-logo">
+        </div>
+        
+        <div class="nav-center">
+            <div class="search-bar">
+                <input type="text" placeholder="Cari produk kesukaanmu...">
+                <button type="button">🔍</button>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <div class="cart-icon">
+                🛒 <span class="cart-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- KATEGORI PRODUK -->
+    <section class="category-section">
+        <div class="category-list">
+            <button class="cat-btn active">Semua</button>
+            <button class="cat-btn">Mi Kering</button>
+            <button class="cat-btn">Mi Instan</button>
+            <button class="cat-btn">Bihun</button>
+            <button class="cat-btn">Bumbu</button>
+            <button class="cat-btn">Snack</button>
+        </div>
+    </section>
+
+    <!-- KONTEN DAFTAR PRODUK (GRID) -->
+    <main class="product-container">
+        <div class="product-grid" id="product-grid">
+            <!-- Produk akan dimunculkan di sini lewat JavaScript -->
+        </div>
+    </main>
+
+    <script src="home.js"></script>
+</body>
+</html>
