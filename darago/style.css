@@ -1,0 +1,181 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    height: 100vh;
+    overflow: hidden; 
+}
+
+.login-container-full {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* SISI KIRI - BRANDING */
+.branding-panel {
+    flex: 1;
+    /* Background variatif dengan gradient lembut */
+    background: radial-gradient(circle at center, #ffffff 0%, #ffeaea 50%, #ffcaca 100%);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    align-items: center;
+}
+
+.img-logo-kecil {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    width: 80px;
+    height: auto;
+    object-fit: contain;
+}
+
+.middle-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+/* Logo Utama (UKURAN GEDE & NO SHADOW) */
+.img-logo-utama {
+    width: 600px; /* Diperbesar sesuai permintaan */
+    height: auto;
+    object-fit: contain;
+    /* Shadow dihapus agar teks DARAGO terbaca jelas */
+    filter: none; 
+}
+
+/* SISI KANAN - FORM */
+.form-panel {
+    flex: 1;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+}
+
+.form-box {
+    width: 100%;
+    max-width: 380px;
+}
+
+.form-box h2 {
+    font-size: 2.4rem;
+    margin-bottom: 35px;
+    color: #333;
+    text-align: center;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    font-size: 1.05rem;
+}
+
+.input-group input:focus {
+    border-color: #cc0000;
+}
+
+.btn-utama {
+    width: 100%;
+    padding: 16px;
+    background-color: #cc0000;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.1rem;
+    margin-top: 10px;
+}
+
+.btn-utama:hover {
+    background-color: #a30000;
+}
+
+.buat-akun-link {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.buat-akun-link a {
+    color: #cc0000;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* MODAL */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 35px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #888;
+}
+
+.ttl-inputs {
+    display: flex;
+    gap: 12px;
+}
+
+.ttl-inputs input {
+    flex: 1;
+}
+
+/* Responsif Mobile */
+@media (max-width: 768px) {
+    .login-container-full {
+        flex-direction: column-reverse;
+    }
+    .img-logo-utama {
+        width: 300px;
+    }
+    .form-panel {
+        padding: 40px 20px;
+    }
+}
