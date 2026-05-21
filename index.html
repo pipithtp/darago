@@ -3,67 +3,926 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Darago - Login</title>
-    <link rel="stylesheet" href="style.css">
+    <title>DaraGO - Belanja Mi Burung Dara</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body { width: 100vw; height: 100vh; overflow: hidden; background-color: #FEF9E7; }
+
+        /* === SISTEM HALAMAN === */
+        .view {
+            position: absolute; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            display: none; z-index: 1;
+            overflow-x: hidden;
+            overflow-y: auto; 
+        }
+        .view.active { display: flex; z-index: 10; }
+
+        /* === 1. HALAMAN LOGIN === */
+        #login-view.active { display: flex; }
+        .left-panel { background-color: #FEF9E7; width: 66.67%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .logo-top-left { position: absolute; top: 40px; left: 40px; height: 60px; }
+        .center-content { text-align: center; }
+        .center-content h1 { font-family: 'Merriweather', serif; color: #3E2723; font-size: 32px; margin: 25px 0; }
+        .center-content h1 span { color: #B71C1C; }
+        
+        .right-panel { background-color: #FDB913; width: 33.33%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .pattern-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: 200px; background-image: url('assets/bg-pattern.png'); background-size: cover; opacity: 0.3; z-index: 1; }
+        .login-form { width: 75%; max-width: 350px; z-index: 2; display: flex; flex-direction: column; gap: 15px; }
+        .input-group { background: white; border-radius: 8px; display: flex; align-items: center; padding: 0 15px; height: 50px; }
+        .input-group input { border: none; outline: none; width: 100%; margin-left: 10px; }
+        .btn-masuk { background-color: #B71C1C; color: white; border: none; border-radius: 8px; height: 45px; font-weight: 600; cursor: pointer; }
+        .btn-buat-akun { background-color: rgba(255, 255, 255, 0.9); color: #3E2723; border: none; border-radius: 8px; height: 45px; font-weight: 600; cursor: pointer; }
+
+        /* === 2. POP-UP REGISTER === */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 999; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; border-radius: 15px; padding: 40px; width: 450px; position: relative; }
+        .modal-content h2 { font-family: 'Merriweather', serif; text-align: center; color: #3E2723; margin-bottom: 20px; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 20px; cursor: pointer; font-weight: bold; }
+        .register-form { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .register-form input { border: 2px solid #B71C1C; border-radius: 8px; padding: 12px; outline: none; width: 100%; }
+        .dob-group { display: flex; gap: 10px; width: 100%; }
+        .dob-group input { flex: 1 1 0; min-width: 0; text-align: center; padding: 12px 5px; }
+        .btn-daftar { background-color: #FDB913; color: #3E2723; border: none; border-radius: 8px; height: 50px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+
+        /* === 3. HALAMAN LOADING === */
+        #loading-view { background-color: #FEF9E7; justify-content: center; align-items: center; }
+        .pulsing-logo { height: 120px; animation: pulse 1s infinite alternate; }
+        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+
+        /* === HEADER GLOBAL === */
+        .app-header { background: #FEF9E7; display: flex; align-items: center; justify-content: space-between; padding: 15px 40px; position: sticky; top: 0; z-index: 100; flex-shrink: 0; border-bottom: 1px solid #E4DCC4;}
+        .header-logo { display: flex; align-items: center; gap: 8px; cursor: pointer;}
+        .header-logo img.tas { height: 35px; }
+        .header-nav { display: flex; gap: 20px; margin-left: 20px; font-weight: 500; font-size: 14px; color: #3E2723;}
+        .header-nav span { cursor: pointer; }
+        
+        .search-bar { display: flex; flex: 1; max-width: 400px; margin: 0 40px; border: 1px solid #ccc; border-radius: 25px; overflow: hidden; background: white; height: 38px;}
+        .search-bar input { flex: 1; border: none; padding: 0 20px; outline: none; background: transparent; font-size: 13px;}
+        .search-bar button { background: transparent; color: #666; border: none; padding: 0 15px; cursor: pointer; font-size: 16px; }
+        
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        .profile-icon { font-size: 20px; cursor: pointer; color: #3E2723;}
+        .cart-icon-btn { position: relative; font-size: 22px; cursor: pointer; background: none; border: none; color: #3E2723;}
+        .cart-badge { position: absolute; top: -5px; right: -10px; background: #B71C1C; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; }
+
+        /* === 4. HALAMAN BERANDA === */
+        #beranda-view { display: none; flex-direction: column; background-color: #FEF9E7; }
+        #beranda-view.active { display: flex; }
+        
+        .hero-section { position: relative; width: 100%; height: 380px; overflow: hidden; flex-shrink: 0; background-color: #3E2723; display: flex; align-items: center;} 
+        .hero-bg-img { position: absolute; right: 0; top: 0; height: 100%; width: 65%; object-fit: cover; }
+        .hero-gradient { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: linear-gradient(to right, #3E2723 35%, transparent 100%); z-index: 1;}
+        .hero-content { position: relative; z-index: 2; padding: 0 60px; color: white; max-width: 50%; }
+        .hero-content h1 { font-family: 'Merriweather', serif; font-size: 42px; line-height: 1.2; margin-bottom: 10px;}
+        .hero-content p { font-size: 16px; margin-bottom: 25px; color: #E4E1D9;}
+        .btn-hero { background: #FDB913; color: #3E2723; font-weight: 700; border: none; padding: 12px 30px; border-radius: 25px; font-size: 15px; cursor: pointer; transition: 0.2s;}
+        .btn-hero:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(253,185,19,0.3);}
+
+        .section-title { text-align: center; font-family: 'Merriweather', serif; color: #3E2723; font-size: 24px; margin: 40px 0 20px; }
+        .category-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-bottom: 40px; padding: 0 40px;}
+        .category-card { background: white; border-radius: 16px; padding: 20px; width: 170px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); cursor: pointer; transition: 0.2s; border: 1px solid #EFEFEF;}
+        .category-card:hover { transform: translateY(-5px); border-color: #FDB913;}
+        .category-card img { height: 70px; object-fit: contain; margin-bottom: 15px;}
+        .category-card span { display: block; font-weight: 600; color: #3E2723; font-size: 14px;}
+
+        .filter-wrapper { display: flex; justify-content: space-between; align-items: center; padding: 0 40px; margin-bottom: 20px; }
+        .sort-dropdown { padding: 8px 15px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 13px; color: #333; outline: none; cursor: pointer; background-color: white; }
+
+        .product-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; padding: 0 40px 40px; flex-shrink: 0;}
+        .product-card { background: white; border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; border: 1px solid #EFEFEF; }
+        .product-card img { width: 100%; height: 130px; object-fit: contain; margin-bottom: 15px; border-radius: 8px;}
+        .product-card h3 { font-size: 14px; color: #3E2723; margin-bottom: 5px; line-height: 1.3; font-weight: 600; flex-grow: 1; }
+        .product-card .price { color: #B71C1C; font-weight: 700; font-size: 15px; margin-bottom: 15px; }
+        
+        .qty-controls { display: flex; border: 1px solid #EFEFEF; border-radius: 6px; overflow: hidden; margin-bottom: 15px; height: 32px; }
+        .qty-btn { background: #f9f9f9; border: none; width: 30px; cursor: pointer; font-weight: bold; color: #555; }
+        .qty-input { flex: 1; border: none; border-left: 1px solid #EFEFEF; border-right: 1px solid #EFEFEF; text-align: center; font-weight: 600; outline: none; width: 100%; color: #333; font-size: 13px; }
+        
+        .card-actions { display: flex; gap: 8px; flex-direction: column;}
+        .btn-cart-outline { width: 100%; border: 1px solid #3E2723; color: #3E2723; background: white; border-radius: 20px; padding: 8px 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-cart-outline:hover { background: #FEF9E7; }
+        .btn-pesan-solid { width: 100%; background: #B71C1C; color: white; border: none; border-radius: 20px; padding: 8px 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;}
+        .btn-pesan-solid:hover { background: #9A1717; }
+
+        .trust-section { display: flex; justify-content: center; gap: 80px; padding: 40px; border-top: 1px solid #EFEFEF; margin-bottom: 20px;}
+        .trust-item { text-align: center; color: #3E2723; }
+        .trust-icon { background: #7C1919; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; margin: 0 auto 15px;}
+        .trust-item span { font-weight: 600; font-size: 14px;}
+
+        /* === 5. HALAMAN KERANJANG (CART) === */
+        #cart-view { display: none; flex-direction: column; background-color: #FEF9E7; }
+        #cart-view.active { display: flex; }
+        .cart-layout { display: flex; gap: 30px; padding: 40px; align-items: flex-start;}
+        .cart-main { flex: 2; }
+        .cart-title { font-family: 'Merriweather', serif; color: #3E2723; font-size: 28px; margin-bottom: 20px; }
+        
+        .cart-box { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); border: 1px solid #EFEFEF;}
+        .cart-table { width: 100%; border-collapse: collapse; }
+        .cart-table th { text-align: left; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0; color: #333; font-weight: 600; font-size: 14px;}
+        .cart-table td { padding: 15px 0; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        .cart-table tr:last-child td { border-bottom: none; }
+        
+        input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #B71C1C; }
+
+        .cart-product-info { display: flex; align-items: center; gap: 15px; }
+        .cart-product-info img { width: 60px; height: 60px; object-fit: contain; background: #FFF3F3; border-radius: 8px; padding: 5px;}
+        .cart-product-name { font-weight: 600; color: #333; font-size: 14px; }
+        
+        .cart-qty-controls { display: flex; border: 1px solid #FDB913; border-radius: 6px; overflow: hidden; width: 90px; }
+        .cart-qty-btn { background: #FFF9E6; border: none; width: 30px; cursor: pointer; font-weight: bold; color: #B71C1C; }
+        .cart-qty-input { flex: 1; border: none; text-align: center; font-weight: 600; outline: none; width: 30px; background: white;}
+        .btn-delete { color: #B71C1C; cursor: pointer; background: none; border: none; font-size: 16px; }
+
+        .cart-sidebar { flex: 1; background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); border: 1px solid #EFEFEF; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #555;}
+        .summary-total { display: flex; justify-content: space-between; padding-top: 15px; border-top: 2px dashed #eee; font-weight: 700; font-size: 18px; color: #3E2723;}
+        .summary-total span:last-child { color: #B71C1C; }
+        
+        .btn-lanjut-checkout { width: 100%; background: #B71C1C; color: white; border: none; border-radius: 50px; padding: 15px; font-weight: 600; font-size: 16px; margin-top: 25px; cursor: pointer; transition: 0.2s;}
+        .btn-lanjut-checkout:hover { background: #9A1717; }
+
+        /* === 6. HALAMAN CHECKOUT === */
+        #checkout-view { display: none; flex-direction: column; background-color: #FEF9E7; }
+        #checkout-view.active { display: flex; }
+        
+        .checkout-header-actions { padding: 20px 40px 0; }
+        .btn-back { background: white; border: 1px solid #ddd; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: 600; color: #555; }
+        
+        .checkout-layout { display: flex; gap: 30px; padding: 20px 40px 40px; align-items: flex-start;}
+        
+        .checkout-form-box { flex: 1.5; background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); border: 1px solid #EFEFEF;}
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #333;}
+        .form-group input, .form-group textarea { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 12px; outline: none; font-family: 'Poppins', sans-serif;}
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
+        
+        .delivery-options { display: flex; flex-direction: column; gap: 10px; margin-top: 10px;}
+        .delivery-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; }
+        .delivery-card.active { border-color: #FDB913; background-color: #FFF9E6; }
+        .delivery-card input { margin: 0; cursor: pointer;}
+        .delivery-info { display: flex; flex-direction: column; }
+        .delivery-name { font-weight: 600; font-size: 14px;}
+        .delivery-price { font-size: 13px; color: #666;}
+
+        .checkout-summary-box { flex: 1; background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); border: 1px solid #EFEFEF;}
+        .checkout-summary-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;}
+        
+        .checkout-item-list { margin-bottom: 20px; }
+        .checkout-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px;}
+        .checkout-item-name { color: #333; font-weight: 500;}
+        .checkout-item-price { color: #666; }
+        
+        .payment-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;}
+        .payment-card { border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
+        .payment-card.active { border-color: #333; background-color: #f9f9f9; }
+        .payment-card span { font-weight: 600; font-size: 14px;}
+        
+        .btn-bayar { width: 100%; background: #B71C1C; color: white; border: none; border-radius: 50px; padding: 15px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s;}
+        .btn-bayar:hover { background: #9A1717; }
+
+        /* Footer Global */
+        .footer-dark { background-color: #3E2723; color: white; padding: 40px; display: flex; flex-direction: column; align-items: center; margin-top: auto; flex-shrink: 0; }
+        .footer-content { display: flex; width: 100%; max-width: 1200px; justify-content: space-between; gap: 30px; font-size: 13px; color: #E4E1D9;}
+        .footer-col h4 { color: white; margin-bottom: 10px; font-size: 14px;}
+        .footer-col p { margin-bottom: 5px; cursor: pointer;}
+        .footer-icons { display: flex; gap: 15px; font-size: 18px; margin-bottom: 15px;}
+        .payment-badges { display: flex; gap: 10px; flex-wrap: wrap; max-width: 150px;}
+        .payment-badges span { background: white; color: #3E2723; font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold;}
+        .footer-bottom { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; text-align: center; font-size: 12px; color: #999; }
+
+        /* === 7. SIDE DRAWER PROFIL === */
+        .drawer-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.5); z-index: 1000;
+            opacity: 0; visibility: hidden; transition: 0.3s ease;
+        }
+        .drawer-overlay.active { opacity: 1; visibility: visible; }
+        
+        .profile-drawer {
+            position: fixed; top: 0; right: -33.33%; width: 33.33%; height: 100vh;
+            background-color: #FEF9E7; z-index: 1001;
+            transition: 0.3s ease-out; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; padding: 40px;
+        }
+        .profile-drawer.active { right: 0; }
+        
+        .drawer-header { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; border-bottom: 1px solid #E4DCC4; padding-bottom: 20px;}
+        .drawer-avatar { width: 70px; height: 70px; background-color: #FDB913; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; color: white; }
+        .drawer-user-info h3 { color: #3E2723; font-size: 20px; margin-bottom: 5px; font-family: 'Merriweather', serif;}
+        .drawer-user-info p { color: #666; font-size: 13px; }
+        .drawer-close { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #3E2723; background: none; border: none;}
+        
+        .drawer-menu { display: flex; flex-direction: column; gap: 15px; flex-grow: 1;}
+        .drawer-menu-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border-radius: 12px; cursor: pointer; transition: 0.2s; border: 1px solid #EFEFEF; color: #3E2723; font-weight: 500; font-size: 14px;}
+        .drawer-menu-item:hover { transform: translateX(-5px); border-color: #FDB913; }
+        .drawer-menu-item i { font-size: 18px; width: 20px; text-align: center; color: #B71C1C; font-style: normal;}
+        
+        .btn-logout { background: transparent; color: #B71C1C; border: 2px solid #B71C1C; border-radius: 50px; padding: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; text-align: center; margin-top: auto;}
+        .btn-logout:hover { background: #B71C1C; color: white; }
+
+    </style>
 </head>
 <body>
-    <div class="login-container-full">
-        
-        <div class="branding-panel">
-            <img src="Logo Burung Dara.png" alt="Logo Burung Dara" class="img-logo-kecil">
 
-            <div class="middle-content">
-                <img src="logo with text.png" alt="Logo Darago Utuh" class="img-logo-utama">
+    <header class="app-header" id="global-header" style="display: none;">
+        <div style="display: flex; align-items: center;">
+            <div class="header-logo" onclick="goToBeranda()">
+                <img src="assets/logo-darago.png" alt="Logo Tas" class="tas" style="height: 30px;">
+            </div>
+            <div class="header-nav">
+                <span onclick="filterBeranda('Semua')">Semua Produk</span>
+                <span onclick="filterBeranda('Mi Kering')">Mi Kering</span>
+                <span onclick="filterBeranda('Mi Instan')">Mi Instan</span>
+                <span onclick="filterBeranda('Bihun')">Bihun</span>
             </div>
         </div>
 
-        <div class="form-panel">
-            <div class="form-box">
-                <h2>Masuk</h2>
-                <form action="#">
-                    <div class="input-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" placeholder="Masukkan email kamu" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="password">Kata sandi</label>
-                        <input type="password" id="password" placeholder="Masukkan kata sandi" required>
-                    </div>
-                    <button type="submit" class="btn-utama">MASUK</button>
-                </form>
-                <div class="buat-akun-link">
-                    <p>Belum punya akun? <a href="#" id="open-modal">Buat Akun</a></p>
-                </div>
+        <div class="search-bar" id="header-search-bar">
+            <button id="search-btn">🔍</button>
+            <input type="text" id="search-input" placeholder="Search">
+        </div>
+
+        <div class="header-actions">
+            <div class="profile-icon">👤</div>
+            <button class="cart-icon-btn" onclick="goToCart()">
+                🛒
+                <span class="cart-badge" id="cart-badge-count">0</span>
+            </button>
+        </div>
+    </header>
+
+    <div id="login-view" class="view active">
+        <div class="left-panel">
+            <img src="assets/logo-burung-dara.png" alt="Logo Burung Dara" class="logo-top-left">
+            <div class="center-content">
+                <img src="assets/logo-darago.png" alt="Tas DaraGO" height="240">
+                <h1>Belanja Mi Burung Dara<br><span>Jadi Mudah</span></h1>
+                <img src="assets/keunggulan.png" alt="Keunggulan" height="90" style="margin-top: 10px;">
+            </div>
+        </div>
+        <div class="right-panel">
+            <div class="pattern-bg"></div>
+            <img src="assets/teks-darago.png" alt="DaraGO" height="50" style="margin-bottom: 30px; z-index: 2;">
+            <div class="login-form">
+                <div class="input-group"><span>✉</span><input type="email" placeholder="Email"></div>
+                <div class="input-group"><span>🔑</span><input type="password" placeholder="Masukkan kata sandi"></div>
+                <button class="btn-masuk">Masuk</button>
+                <div style="text-align: center; color: #5D4037; font-size: 14px;">atau</div>
+                <button class="btn-buat-akun" id="btn-munculkan-register">Buat Akun</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="register-modal">
         <div class="modal-content">
-            <span class="close-btn" id="close-modal">&times;</span>
+            <span class="close-btn" id="btn-tutup-register">X</span>
             <h2>Buat Akun</h2>
-            <form action="#">
-                <div class="input-group">
-                    <label for="reg-nama">Nama</label>
-                    <input type="text" id="reg-nama" placeholder="Nama lengkap" required>
+            <div class="register-form">
+                <input type="text" placeholder="Nama Lengkap">
+                <input type="email" placeholder="Alamat Email">
+                <label style="font-size: 12px; margin-bottom: -10px; font-weight: bold; color: #3E2723;">Tanggal Lahir</label>
+                <div class="dob-group">
+                    <input type="text" placeholder="DD">
+                    <input type="text" placeholder="MM">
+                    <input type="text" placeholder="YYYY">
                 </div>
-                <div class="input-group">
-                    <label for="reg-email">Email</label>
-                    <input type="email" id="reg-email" placeholder="Alamat email" required>
-                </div>
-                <div class="input-group">
-                    <label>TTL (Tanggal Lahir)</label>
-                    <div class="ttl-inputs">
-                        <input type="number" placeholder="DD" min="1" max="31" required>
-                        <input type="number" placeholder="MM" min="1" max="12" required>
-                        <input type="number" placeholder="YYYY" min="1900" max="2026" required>
-                    </div>
-                </div>
-                <button type="submit" class="btn-utama" style="margin-top: 15px;">DAFTAR</button>
-            </form>
+                <button class="btn-daftar" id="btn-klik-daftar">Daftar</button>
+            </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="loading-view" class="view">
+        <img src="assets/logo-darago.png" alt="Loading..." class="pulsing-logo">
+    </div>
+
+    <div id="beranda-view" class="view">
+        
+        <div class="hero-section">
+            <img src="assets/inul-header.png" alt="Hero Background" class="hero-bg-img">
+            <div class="hero-gradient"></div>
+            <div class="hero-content">
+                <h1>Dapur Dara<br>Di Rumah Anda</h1>
+                <p>Pesan mi favorit langsung sampai!</p>
+                <button class="btn-hero" onclick="document.getElementById('product-container').scrollIntoView({behavior: 'smooth'})">Belanja Sekarang</button>
+            </div>
+        </div>
+
+        <h2 class="section-title">Kategori Utama</h2>
+        <div class="category-grid">
+            <div class="category-card" onclick="filterBeranda('Semua')">
+                <div style="height: 70px; display:flex; align-items:center; justify-content:center; font-size:40px; margin-bottom:15px;">📦</div>
+                <span>Semua Produk</span>
+            </div>
+            <div class="category-card" onclick="filterBeranda('Mi Kering')">
+                <img src="assets/mi-goreng.png" alt="Mi Kering">
+                <span>Mi Kering</span>
+            </div>
+            <div class="category-card" onclick="filterBeranda('Mi Instan')">
+                <img src="assets/mi-goreng.png" alt="Mi Instan">
+                <span>Mi Instan</span>
+            </div>
+            <div class="category-card" onclick="filterBeranda('Bihun')">
+                <img src="assets/mi-goreng.png" alt="Bihun">
+                <span>Bihun & Soun</span>
+            </div>
+            <div class="category-card" onclick="filterBeranda('Bumbu')">
+                <img src="assets/mi-goreng.png" alt="Bumbu">
+                <span>Bumbu</span>
+            </div>
+        </div>
+
+        <div class="filter-wrapper">
+            <h2 class="section-title" id="katalog-title" style="margin: 0;">Semua Produk</h2>
+            <select class="sort-dropdown" id="sort-select">
+                <option value="default">Urutkan: Relevansi</option>
+                <option value="terbaru">Terbaru</option>
+                <option value="termurah">Harga: Termurah</option>
+                <option value="tertinggi">Harga: Tertinggi</option>
+            </select>
+        </div>
+
+        <div class="product-grid" id="product-container">
+            </div>
+
+        <h2 class="section-title">Kenapa Belanja di DaraGO?</h2>
+        <div class="trust-section">
+            <div class="trust-item">
+                <div class="trust-icon">✔</div>
+                <span>Produk Asli</span>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">🚚</div>
+                <span>Kirim Seluruh<br>Indonesia</span>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">🛡</div>
+                <span>Pembayaran<br>Aman</span>
+            </div>
+        </div>
+
+        <div id="beranda-footer-container"></div>
+    </div>
+
+    <div id="cart-view" class="view">
+        <div class="cart-layout">
+            <div class="cart-main">
+                <h1 class="cart-title">Keranjang Belanja</h1>
+                <div class="cart-box">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;">
+                                    <input type="checkbox" id="check-all" onchange="toggleAllCartItems(this.checked)">
+                                </th>
+                                <th>Produk</th>
+                                <th>Harga</th>
+                                <th>Jumlah</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="cart-sidebar">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal">Rp 0</span>
+                </div>
+                <div class="summary-total" style="border-top: none; padding-top: 0;">
+                    <span>Total Belanja</span>
+                    <span id="cart-total">Rp 0</span>
+                </div>
+                
+                <button class="btn-lanjut-checkout" onclick="proceedToCheckoutFromCart()">Lanjut ke Checkout ></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkout-view" class="view">
+        <div class="checkout-header-actions">
+            <button class="btn-back" onclick="goToCart()">❮ Back to cart</button>
+        </div>
+        
+        <div class="checkout-layout">
+            <div class="checkout-form-box">
+                <h2 style="font-family: 'Merriweather', serif; color:#3E2723; margin-bottom: 25px; font-size: 28px;">Selesaikan Pesanan</h2>
+                
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" placeholder="Nama Lengkap">
+                </div>
+                <div class="form-group">
+                    <label>Nomor HP</label>
+                    <input type="text" placeholder="Nomor HP">
+                </div>
+                <div class="form-group">
+                    <label>Alamat Lengkap</label>
+                    <textarea rows="3" placeholder="Alamat Lengkap"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Kota</label>
+                        <input type="text" placeholder="Kota">
+                    </div>
+                    <div class="form-group">
+                        <label>Kode Pos</label>
+                        <input type="text" placeholder="Kode Pos">
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Choose delivery</label>
+                    <div class="delivery-options">
+                        <label class="delivery-card active">
+                            <input type="radio" name="delivery" checked>
+                            <div class="delivery-info">
+                                <span class="delivery-name">🚚 DaraGO Kilat (1-2 hari)</span>
+                                <span class="delivery-price">Rp 15.000</span>
+                            </div>
+                        </label>
+                        <label class="delivery-card">
+                            <input type="radio" name="delivery">
+                            <div class="delivery-info">
+                                <span class="delivery-name">🚚 Reguler (2-3 hari)</span>
+                                <span class="delivery-price">Rp 10.000</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="checkout-summary-box">
+                <div class="checkout-summary-title">Order Summary</div>
+                
+                <div class="checkout-item-list" id="checkout-item-list">
+                    </div>
+                
+                <div style="border-top: 1px solid #ddd; margin: 15px 0;"></div>
+                
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px; color:#555;">
+                    <span>Subtotal</span>
+                    <span id="checkout-subtotal">Rp 0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:13px; color:#555;">
+                    <span>Ongkir</span>
+                    <span>Rp 15.000</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px; font-weight:700; font-size:16px; color:#333;">
+                    <span>Total</span>
+                    <span id="checkout-grandtotal">Rp 0</span>
+                </div>
+                
+                <div class="checkout-summary-title" style="margin-top: 20px;">Payment options</div>
+                <div class="payment-options">
+                    <label class="payment-card active">
+                        <span style="color: #00A5CF; font-weight:800; font-size:16px;">go<span style="color:#000;">pay</span></span>
+                        <input type="radio" name="payment" checked>
+                    </label>
+                    <label class="payment-card">
+                        <span style="color: #EE4D2D; font-weight:700;">ShopeePay</span>
+                        <input type="radio" name="payment">
+                    </label>
+                    <label class="payment-card">
+                        <span style="color: #F37021; font-weight:700;">SeaBank</span>
+                        <input type="radio" name="payment">
+                    </label>
+                    <label class="payment-card">
+                        <span style="color: #0066AE; font-weight:700;">Bank BCA</span>
+                        <input type="radio" name="payment">
+                    </label>
+                </div>
+                
+                <button class="btn-bayar" onclick="alert('Pesanan Berhasil Dibuat!')">Bayar Sekarang</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="drawer-overlay" id="drawer-overlay"></div>
+    <div class="profile-drawer" id="profile-drawer">
+        <button class="drawer-close" id="btn-tutup-drawer">✖</button>
+        <div class="drawer-header">
+            <div class="drawer-avatar">👩🏻‍💻</div>
+            <div class="drawer-user-info">
+                <h3>Annisa Farah Angelin</h3>
+                <p>annisa.farah@example.com</p>
+            </div>
+        </div>
+        <div class="drawer-menu">
+            <div class="drawer-menu-item">
+                <i>📦</i> <span>Pesanan Saya</span>
+            </div>
+            <div class="drawer-menu-item">
+                <i>⭐</i> <span>DaraPoints (1.250 pts)</span>
+            </div>
+            <div class="drawer-menu-item">
+                <i>⚙️</i> <span>Pengaturan Akun</span>
+            </div>
+            <div class="drawer-menu-item">
+                <i>📍</i> <span>Daftar Alamat</span>
+            </div>
+        </div>
+        <button class="btn-logout" onclick="location.reload()">Keluar</button>
+    </div>
+
+    <script>
+        // === STATE MANAGEMENT ===
+        const products = [
+            { id: 1, cat: "Mi Instan", name: "Mi Instan Reborn", price: 20000, img: "assets/mi-goreng.png" },
+            { id: 2, cat: "Bihun", name: "Bihun Jagung Dara", price: 2000, img: "assets/mi-goreng.png" },
+            { id: 5, cat: "Mi Kering", name: "Mi Urai Original", price: 28000, img: "assets/mi-goreng.png" },
+            { id: 8, cat: "Mi Instan", name: "Mi Goreng Pedas Gurih", price: 4000, img: "assets/mi-goreng.png" },
+            { id: 7, cat: "Mi Kering", name: "Mi Burung Dara Pack", price: 12000, img: "assets/mi-goreng.png" },
+            { id: 9, cat: "Bumbu", name: "Bumbu Praktis Spesial", price: 5000, img: "assets/mi-goreng.png" }
+        ];
+
+        let cartItems = [];
+        let itemsToCheckout = []; 
+        let currentCategory = 'Semua';
+        let searchQuery = '';
+        let currentSort = 'default';
+
+        function formatRupiah(angka) {
+            return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // === LOGIKA TAMPILAN VIEW & HEADER ===
+        const views = document.querySelectorAll('.view');
+        const globalHeader = document.getElementById('global-header');
+
+        function hideAllViews() {
+            views.forEach(v => v.classList.remove('active'));
+        }
+
+        function showAppHeader() {
+            globalHeader.style.display = 'flex';
+        }
+
+        function goToBeranda() {
+            hideAllViews();
+            document.getElementById('beranda-view').classList.add('active');
+            showAppHeader();
+            updateDisplay(); 
+        }
+
+        function goToCart() {
+            hideAllViews();
+            document.getElementById('cart-view').classList.add('active');
+            showAppHeader();
+            renderCartPage();
+        }
+
+        function goToCheckout() {
+            hideAllViews();
+            document.getElementById('checkout-view').classList.add('active');
+            showAppHeader();
+            renderCheckoutPage();
+        }
+
+        // === LOGIKA LOGIN / DAFTAR ===
+        
+        // FUNGSI BARU: Tombol Masuk Langsung
+        document.querySelector('.btn-masuk').addEventListener('click', (e) => {
+            e.preventDefault();
+            hideAllViews();
+            document.getElementById('loading-view').classList.add('active');      
+
+            setTimeout(() => {
+                goToBeranda();
+                renderFooter('beranda-footer-container');
+            }, 2000);
+        });
+
+        document.getElementById('btn-munculkan-register').addEventListener('click', () => {
+            document.getElementById('register-modal').classList.add('active');
+        });
+
+        document.getElementById('btn-tutup-register').addEventListener('click', () => {
+            document.getElementById('register-modal').classList.remove('active');
+        });
+
+        document.getElementById('btn-klik-daftar').addEventListener('click', () => {
+            document.getElementById('register-modal').classList.remove('active'); 
+            hideAllViews();
+            document.getElementById('loading-view').classList.add('active');      
+
+            setTimeout(() => {
+                goToBeranda();
+                renderFooter('beranda-footer-container');
+            }, 2000);
+        });
+
+        // === LOGIKA SIDE DRAWER PROFIL ===
+        const profileIcon = document.querySelector('.profile-icon');
+        const profileDrawer = document.getElementById('profile-drawer');
+        const drawerOverlay = document.getElementById('drawer-overlay');
+        const btnTutupDrawer = document.getElementById('btn-tutup-drawer');
+
+        function toggleDrawer() {
+            profileDrawer.classList.toggle('active');
+            drawerOverlay.classList.toggle('active');
+        }
+
+        profileIcon.addEventListener('click', toggleDrawer);
+        drawerOverlay.addEventListener('click', toggleDrawer);
+        btnTutupDrawer.addEventListener('click', toggleDrawer);
+
+
+        // === FUNGSI KERANJANG (CART) & TRANSAKSI ===
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-badge-count');
+            const totalItems = cartItems.reduce((sum, item) => sum + item.qty, 0);
+            badge.textContent = totalItems;
+        }
+
+        function updateCardQty(btn, change) {
+            const input = btn.parentElement.querySelector('.qty-input');
+            let val = parseInt(input.value);
+            if(val + change >= 1) {
+                input.value = val + change;
+            }
+        }
+
+        function triggerAddToCart(productId, btnElement) {
+            const qty = parseInt(btnElement.parentElement.parentElement.querySelector('.product-qty-input').value);
+            addToCart(productId, qty);
+        }
+
+        function triggerBuyNow(productId, btnElement) {
+            const qty = parseInt(btnElement.parentElement.parentElement.querySelector('.product-qty-input').value);
+            buyNow(productId, qty);
+        }
+
+        function addToCart(productId, qty) {
+            const product = products.find(p => p.id === productId);
+            const existingItem = cartItems.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.qty += qty;
+            } else {
+                cartItems.push({ ...product, qty: qty, selected: true });
+            }
+            updateCartBadge();
+            alert(`${qty} ${product.name} ditambahkan ke keranjang!`);
+        }
+
+        function buyNow(productId, qty) {
+            const product = products.find(p => p.id === productId);
+            itemsToCheckout = [{ ...product, qty: qty }];
+            goToCheckout();
+        }
+
+        function proceedToCheckoutFromCart() {
+            const selectedItems = cartItems.filter(item => item.selected);
+            if(selectedItems.length === 0) {
+                alert('Pilih minimal satu produk untuk di-checkout!');
+                return;
+            }
+            itemsToCheckout = [...selectedItems];
+            goToCheckout();
+        }
+
+        // === RENDER HALAMAN BERANDA ===
+        const productContainer = document.getElementById('product-container');
+
+        function renderProducts(dataToRender) {
+            productContainer.innerHTML = ''; 
+            if (dataToRender.length === 0) {
+                productContainer.innerHTML = '<div style="grid-column: span 5; text-align: center; padding: 40px; color: #666;">Maaf, produk tidak ditemukan.</div>';
+                return;
+            }
+
+            dataToRender.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.img}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <div class="price">${formatRupiah(product.price)}</div>
+                    
+                    <div class="qty-controls">
+                        <button class="qty-btn" onclick="updateCardQty(this, -1)">-</button>
+                        <input type="text" value="1" class="qty-input product-qty-input" readonly>
+                        <button class="qty-btn" onclick="updateCardQty(this, 1)">+</button>
+                    </div>
+
+                    <div class="card-actions">
+                        <button class="btn-cart-outline" onclick="triggerAddToCart(${product.id}, this)">+ Keranjang</button>
+                        <button class="btn-pesan-solid" onclick="triggerBuyNow(${product.id}, this)">Beli Langsung</button>
+                    </div>
+                `;
+                productContainer.appendChild(card);
+            });
+        }
+
+        function updateDisplay() {
+            let filteredProducts = [...products];
+            
+            if (currentCategory !== 'Semua') {
+                filteredProducts = filteredProducts.filter(p => p.cat === currentCategory || p.cat.includes(currentCategory));
+            }
+            if (searchQuery) {
+                filteredProducts = filteredProducts.filter(p => p.name.toLowerCase().includes(searchQuery));
+            }
+
+            if (currentSort === 'termurah') {
+                filteredProducts.sort((a, b) => a.price - b.price);
+            } else if (currentSort === 'tertinggi') {
+                filteredProducts.sort((a, b) => b.price - a.price);
+            } else if (currentSort === 'terbaru') {
+                filteredProducts.reverse(); 
+            }
+
+            renderProducts(filteredProducts);
+        }
+
+        function filterBeranda(kategori) {
+            currentCategory = kategori;
+            document.getElementById('katalog-title').textContent = kategori === 'Semua' ? 'Semua Produk' : 'Kategori: ' + kategori;
+            updateDisplay();
+            document.getElementById('product-container').scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+
+        // Event Listener Sorting & Search
+        document.getElementById('sort-select').addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            updateDisplay();
+        });
+
+        const searchInput = document.getElementById('search-input');
+        document.getElementById('search-btn').addEventListener('click', () => {
+            searchQuery = searchInput.value.toLowerCase();
+            updateDisplay();
+            document.getElementById('product-container').scrollIntoView({behavior: 'smooth', block: 'start'});
+        });
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                searchQuery = searchInput.value.toLowerCase();
+                updateDisplay();
+                document.getElementById('product-container').scrollIntoView({behavior: 'smooth', block: 'start'});
+            }
+        });
+
+
+        // === RENDER HALAMAN KERANJANG ===
+        function renderCartPage() {
+            const tbody = document.getElementById('cart-table-body');
+            tbody.innerHTML = '';
+            
+            let subtotal = 0;
+            let allChecked = true;
+            let hasItems = cartItems.length > 0;
+
+            if(!hasItems) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color:#666;">Keranjang masih kosong</td></tr>';
+                document.getElementById('check-all').checked = false;
+                document.getElementById('check-all').disabled = true;
+            } else {
+                document.getElementById('check-all').disabled = false;
+
+                cartItems.forEach((item, index) => {
+                    const totalHarga = item.price * item.qty;
+                    
+                    if(item.selected) {
+                        subtotal += totalHarga;
+                    } else {
+                        allChecked = false; 
+                    }
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="cart-item-check" onchange="toggleCartItem(${index}, this.checked)" ${item.selected ? 'checked' : ''}>
+                        </td>
+                        <td>
+                            <div class="cart-product-info">
+                                <img src="${item.img}" alt="${item.name}">
+                                <div class="cart-product-name">${item.name}</div>
+                            </div>
+                        </td>
+                        <td>${formatRupiah(item.price)}</td>
+                        <td>
+                            <div class="cart-qty-controls">
+                                <button class="cart-qty-btn" onclick="changeCartQty(${index}, -1)">-</button>
+                                <input type="text" value="${item.qty}" class="cart-qty-input" readonly>
+                                <button class="cart-qty-btn" onclick="changeCartQty(${index}, 1)">+</button>
+                            </div>
+                        </td>
+                        <td style="font-weight: 700;">${formatRupiah(totalHarga)}</td>
+                        <td><button class="btn-delete" onclick="removeFromCart(${index})">🗑</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                document.getElementById('check-all').checked = allChecked;
+            }
+
+            document.getElementById('cart-subtotal').textContent = formatRupiah(subtotal);
+            document.getElementById('cart-total').textContent = formatRupiah(subtotal);
+        }
+
+        function toggleCartItem(index, isChecked) {
+            cartItems[index].selected = isChecked;
+            renderCartPage(); 
+        }
+
+        function toggleAllCartItems(isChecked) {
+            cartItems.forEach(item => item.selected = isChecked);
+            renderCartPage();
+        }
+
+        function changeCartQty(index, change) {
+            if(cartItems[index].qty + change >= 1) {
+                cartItems[index].qty += change;
+                renderCartPage();
+                updateCartBadge();
+            }
+        }
+
+        function removeFromCart(index) {
+            cartItems.splice(index, 1);
+            renderCartPage();
+            updateCartBadge();
+        }
+
+        // === RENDER HALAMAN CHECKOUT ===
+        function renderCheckoutPage() {
+            const listContainer = document.getElementById('checkout-item-list');
+            listContainer.innerHTML = '';
+            
+            let subtotal = 0;
+            let ongkir = 15000; 
+
+            itemsToCheckout.forEach(item => {
+                const totalHarga = item.price * item.qty;
+                subtotal += totalHarga;
+                
+                const div = document.createElement('div');
+                div.className = 'checkout-item';
+                div.innerHTML = `
+                    <div style="flex:1;">
+                        <span class="checkout-item-name">${item.name}<br><span style="font-size:10px; color:#999;">Mi Burung Dara</span></span>
+                    </div>
+                    <span class="checkout-item-price">${formatRupiah(totalHarga)}</span>
+                `;
+                listContainer.appendChild(div);
+            });
+
+            document.getElementById('checkout-subtotal').textContent = formatRupiah(subtotal);
+            document.getElementById('checkout-grandtotal').textContent = formatRupiah(subtotal + ongkir);
+        }
+
+        // === FOOTER INJECTION ===
+        function renderFooter(containerId) {
+            const footerHTML = `
+            <div class="footer-dark">
+                <div class="footer-content">
+                    <div class="footer-col" style="flex: 2;">
+                        <h4>DaraGO</h4>
+                        <p>Tentang Kami</p>
+                        <p>FAQ</p>
+                        <p>Layanan Pelanggan</p>
+                    </div>
+                    <div class="footer-col" style="flex: 1; text-align: right;">
+                        <div class="footer-icons">
+                            <span>📷</span> <span>💬</span> <span>🐦</span>
+                        </div>
+                        <div class="payment-badges" style="justify-content: flex-end;">
+                            <span>WSA</span> <span>Mastercard</span> <span>PayPal</span>
+                            <span>OVO</span> <span>GoPay</span> <span>Dana</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    &copy; 2026 DaraGO - Belanja Mi Burung Dara
+                </div>
+            </div>`;
+            document.getElementById(containerId).innerHTML = footerHTML;
+        }
+
+        document.querySelectorAll('.delivery-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.delivery-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                this.querySelector('input').checked = true;
+            });
+        });
+
+        document.querySelectorAll('.payment-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                this.querySelector('input').checked = true;
+            });
+        });
+
+    </script>
 </body>
 </html>
